@@ -1,0 +1,19 @@
+{
+  "name": "sheddesign",
+  "version": "0.1.0",
+  "description": "AI-powered garden shed design assistant",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "install-all": "npm install",
+    "dev": "npm --workspaces run dev",
+    "build": "npm --workspaces run build",
+    "test": "npm --workspaces run test"
+  },
+  "keywords": ["garden", "design", "ai", "3d"],
+  "author": "",
+  "license": "MIT"
+}
