@@ -1,52 +1,68 @@
 import express from 'express'
 import cors from 'cors'
+import rateLimit from 'express-rate-limit'
 import uploadRoutes from './routes/upload.js'
 import config from './config/env.js'
 
 const app = express()
 
-app.use(cors())
-app.use(express.json({ limit: '50mb' }))
-app.use(express.urlencoded({ limit: '50mb', extended: true }))
+app.use(cors({
+  origin: config.allowedOrigins,
+  credentials: true,
+}))
 
+app.use(express.json({ limit: '1mb' }))
+app.use(express.urlencoded({ limit: '1mb', extended: true }))
+
+// Rate limiting: 30 uploads per IP per 15 minutes
+const uploadLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later' },
+})
+
+// General API rate limit: 200 requests per IP per 15 minutes
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later' },
+})
+
+app.use('/api/upload', uploadLimiter)
+app.use('/api', apiLimiter)
 app.use('/api', uploadRoutes)
 
-// 健康检查端点
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
 
-// 根路由
-app.get('/', (req, res) => {
+app.get('/', (_req, res) => {
   res.json({ message: 'ShedDesign API Server', version: '0.1.0' })
 })
 
-// 错误处理中间件
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error('Error:', err)
-  res.status(500).json({
+  res.status(err.status ?? 500).json({
     error: config.nodeEnv === 'development' ? err.message : 'Internal server error',
   })
 })
 
-// 404 处理
-app.use((req, res) => {
+app.use((_req, res) => {
   res.status(404).json({ error: 'Not found' })
 })
 
-// 启动服务器
 const server = app.listen(config.port, () => {
-  console.log(`🚀 ShedDesign API Server 运行在 http://localhost:${config.port}`)
-  console.log(`📝 环境: ${config.nodeEnv}`)
+  console.log(`🚀 ShedDesign API running at http://localhost:${config.port}`)
+  console.log(`📝 Environment: ${config.nodeEnv}`)
+  console.log(`🔒 Allowed origins: ${config.allowedOrigins.join(', ')}`)
 })
 
-// 优雅关闭
 process.on('SIGINT', () => {
-  console.log('正在关闭服务器...')
-  server.close(() => {
-    console.log('服务器已关闭')
-    process.exit(0)
-  })
+  server.close(() => process.exit(0))
 })
 
 export default app

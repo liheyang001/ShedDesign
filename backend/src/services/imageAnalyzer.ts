@@ -3,29 +3,44 @@ import fs from 'fs'
 import config from '../config/env.js'
 import type { GardenAnalysis } from '../types/garden.js'
 
-const ANALYSIS_PROMPT = `请分析这张花园图片，并以 JSON 格式提供以下信息：
-1. 估计的花园尺寸（宽 x 高，单位米）
-2. 地面朝向（N/S/E/W/NE/SE/SW/NW）
-3. 全天光照条件（早上、下午、傍晚分别为：full-sun/partial-sun/partial-shade/shade）
-4. 现有结构（房屋、树木、栅栏等）
-5. 可用空间（至少3个潜在位置，带x/y坐标和0-1的评分）
-6. 地形（flat/sloped/irregular）
-7. 排水状况（good/moderate/poor）
+const ANALYSIS_PROMPT = `Analyze this garden image and return ONLY a JSON object with no markdown, no code fences, no explanation.
 
-只返回有效的 JSON，不要添加其他文字说明。格式如下：
+Required JSON format:
 {
-  "estimatedSize": {"width": 15, "height": 20},
-  "orientation": "NE",
-  "sunlight": {"morning": "full-sun", "afternoon": "partial-shade", "evening": "shade"},
-  "existingStructures": ["house", "large-tree", "fence"],
+  "estimatedSize": {"width": <number, meters>, "height": <number, meters>},
+  "orientation": "<N|S|E|W|NE|SE|SW|NW>",
+  "sunlight": {"morning": "<full-sun|partial-sun|partial-shade|shade>", "afternoon": "<same>", "evening": "<same>"},
+  "existingStructures": ["<string>"],
   "availableSpaces": [
-    {"x": 3, "y": 5, "width": 4, "height": 4, "score": 0.85},
-    {"x": 8, "y": 2, "width": 3, "height": 3, "score": 0.7},
-    {"x": 1, "y": 10, "width": 5, "height": 5, "score": 0.6}
+    {"x": <number>, "y": <number>, "width": <number>, "height": <number>, "score": <0-1>}
   ],
-  "terrain": "flat",
-  "drainage": "good"
-}`
+  "terrain": "<flat|sloped|irregular>",
+  "drainage": "<good|moderate|poor>"
+}
+
+Return at least 3 availableSpaces. Return ONLY the JSON object.`
+
+const VALID_ORIENTATIONS = new Set(['N', 'S', 'E', 'W', 'NE', 'SE', 'SW', 'NW'])
+const VALID_SUNLIGHT = new Set(['full-sun', 'partial-sun', 'partial-shade', 'shade'])
+const VALID_TERRAIN = new Set(['flat', 'sloped', 'irregular'])
+const VALID_DRAINAGE = new Set(['good', 'moderate', 'poor'])
+
+function isValidAnalysis(data: unknown): data is GardenAnalysis {
+  if (!data || typeof data !== 'object') return false
+  const d = data as Record<string, unknown>
+
+  if (!d.estimatedSize || typeof (d.estimatedSize as any).width !== 'number') return false
+  if (!VALID_ORIENTATIONS.has(d.orientation as string)) return false
+  if (!d.sunlight) return false
+  const s = d.sunlight as Record<string, unknown>
+  if (!VALID_SUNLIGHT.has(s.morning as string)) return false
+  if (!Array.isArray(d.existingStructures)) return false
+  if (!Array.isArray(d.availableSpaces) || d.availableSpaces.length === 0) return false
+  if (!VALID_TERRAIN.has(d.terrain as string)) return false
+  if (!VALID_DRAINAGE.has(d.drainage as string)) return false
+
+  return true
+}
 
 function fallbackAnalysis(): GardenAnalysis {
   return {
@@ -43,9 +58,16 @@ function fallbackAnalysis(): GardenAnalysis {
   }
 }
 
+const mimeTypeMap: Record<string, string> = {
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  png: 'image/png',
+  webp: 'image/webp',
+}
+
 export async function analyzeGardenImage(imagePath: string): Promise<GardenAnalysis> {
   if (!config.geminiApiKey) {
-    console.warn('GEMINI_API_KEY 未设置，返回模拟分析数据')
+    console.warn('GEMINI_API_KEY not set — returning mock analysis')
     return fallbackAnalysis()
   }
 
@@ -54,14 +76,7 @@ export async function analyzeGardenImage(imagePath: string): Promise<GardenAnaly
 
   const imageData = fs.readFileSync(imagePath)
   const base64Data = imageData.toString('base64')
-
   const ext = imagePath.split('.').pop()?.toLowerCase() ?? 'jpeg'
-  const mimeTypeMap: Record<string, string> = {
-    jpg: 'image/jpeg',
-    jpeg: 'image/jpeg',
-    png: 'image/png',
-    webp: 'image/webp',
-  }
   const mimeType = mimeTypeMap[ext] ?? 'image/jpeg'
 
   const response = await model.generateContent([
@@ -69,11 +84,28 @@ export async function analyzeGardenImage(imagePath: string): Promise<GardenAnaly
     ANALYSIS_PROMPT,
   ])
 
-  const responseText = response.response.text()
-  const jsonMatch = responseText.match(/\{[\s\S]*\}/)
+  const responseText = response.response.text().trim()
+
+  // Strip markdown code fences if Gemini wraps the JSON
+  const stripped = responseText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim()
+  const jsonMatch = stripped.match(/\{[\s\S]*\}/)
   if (!jsonMatch) {
-    throw new Error('无法从 Gemini 响应中提取 JSON')
+    console.error('Gemini response did not contain JSON:', responseText.slice(0, 200))
+    return fallbackAnalysis()
   }
 
-  return JSON.parse(jsonMatch[0]) as GardenAnalysis
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(jsonMatch[0])
+  } catch {
+    console.error('Failed to parse Gemini JSON response')
+    return fallbackAnalysis()
+  }
+
+  if (!isValidAnalysis(parsed)) {
+    console.error('Gemini response failed schema validation:', JSON.stringify(parsed).slice(0, 200))
+    return fallbackAnalysis()
+  }
+
+  return parsed
 }

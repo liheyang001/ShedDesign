@@ -8,6 +8,9 @@ export const config = {
   apiUrl: process.env.API_URL || 'http://localhost:5000',
   geminiApiKey: process.env.GEMINI_API_KEY,
   databaseUrl: process.env.DATABASE_URL,
+  allowedOrigins: process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+    : ['http://localhost:5173', 'http://localhost:3000'],
 }
 
 // 验证必需的环境变量
