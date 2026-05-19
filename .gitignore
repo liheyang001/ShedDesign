@@ -33,3 +33,7 @@ yarn-debug.log*
 # Temporary
 .cache/
 .superpowers/
+
+# Uploaded user images (runtime artifacts, not source)
+backend/uploads/*
+!backend/uploads/.gitkeep
