@@ -5,9 +5,9 @@ export interface GardenAnalysis {
   }
   orientation: string
   sunlight: {
-    morning: string
-    afternoon: string
-    evening: string
+    morning: 'full-sun' | 'partial-sun' | 'partial-shade' | 'shade'
+    afternoon: 'full-sun' | 'partial-sun' | 'partial-shade' | 'shade'
+    evening: 'full-sun' | 'partial-sun' | 'partial-shade' | 'shade'
   }
   existingStructures: string[]
   availableSpaces: Array<{
@@ -17,13 +17,37 @@ export interface GardenAnalysis {
     height: number
     score: number
   }>
-  terrain: string
-  drainage: string
+  terrain: 'flat' | 'sloped' | 'irregular'
+  drainage: 'good' | 'moderate' | 'poor'
 }
 
-export interface UploadState {
-  imageId: string | null
-  analysis: GardenAnalysis | null
-  isLoading: boolean
-  error: string | null
+export interface UploadResponse {
+  imageId: string
+  filename: string
+  analysis: GardenAnalysis
+}
+
+export interface UserPreferences {
+  shedPurpose: 'storage' | 'workshop' | 'leisure' | 'other'
+  preferredSize: 'small' | 'medium' | 'large'
+  stylePreference: 'modern' | 'traditional' | 'industrial' | 'cottage'
+  rainProtection: 'basic' | 'moderate' | 'professional'
+  sunlightPreference: 'full-sun' | 'partial' | 'shade'
+  budget?: number
+  specialRequirements?: string
+}
+
+export interface DesignRecommendation {
+  primaryRecommendation: {
+    position: { x: number; y: number }
+    orientation: number
+    size: { width: number; depth: number; height: number }
+    rationale: string
+  }
+  alternativeOptions: Array<{
+    position: { x: number; y: number }
+    pros: string[]
+    cons: string[]
+  }>
+  constructionTips: string[]
 }

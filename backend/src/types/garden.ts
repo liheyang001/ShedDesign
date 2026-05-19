@@ -23,6 +23,7 @@ export interface GardenAnalysis {
 
 export interface UploadResponse {
   imageId: string
+  filename: string
   analysis: GardenAnalysis
 }
 

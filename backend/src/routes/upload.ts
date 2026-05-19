@@ -16,7 +16,20 @@ const upload = multer({
   },
 })
 
-router.post('/upload', upload.single('image'), uploadImage)
+router.post(
+  '/upload',
+  (req, res, next) => {
+    upload.single('image')(req, res, (err) => {
+      if (!err) return next()
+      // multer-specific errors (file too large, wrong type)
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(413).json({ error: 'File too large. Maximum size is 5MB.' })
+      }
+      return res.status(400).json({ error: err.message || 'Invalid file' })
+    })
+  },
+  uploadImage,
+)
 router.get('/image/:imageId', getImage)
 
 export default router

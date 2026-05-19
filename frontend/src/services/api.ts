@@ -16,9 +16,8 @@ export async function uploadGardenImage(file: File): Promise<{
   const formData = new FormData()
   formData.append('image', file)
 
-  const response = await api.post('/upload', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  })
+  // No Content-Type header — browser sets it automatically with the correct multipart boundary
+  const response = await api.post('/upload', formData)
 
   return response.data
 }
