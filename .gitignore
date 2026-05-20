@@ -37,3 +37,6 @@ yarn-debug.log*
 # Uploaded user images (runtime artifacts, not source)
 backend/uploads/*
 !backend/uploads/.gitkeep
+
+# Runtime data (user accounts — not source)
+backend/data/

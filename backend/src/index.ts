@@ -2,6 +2,9 @@ import express from 'express'
 import cors from 'cors'
 import rateLimit from 'express-rate-limit'
 import uploadRoutes from './routes/upload.js'
+import authRoutes from './routes/auth.js'
+import questionnaireRoutes from './routes/questionnaire.js'
+import recommendationRoutes from './routes/recommendation.js'
 import config from './config/env.js'
 
 const app = express()
@@ -32,9 +35,22 @@ const apiLimiter = rateLimit({
   message: { error: 'Too many requests, please try again later' },
 })
 
+// Auth endpoints: stricter limit to prevent brute force
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later' },
+})
+
+app.use('/api/auth', authLimiter)
 app.use('/api/upload', uploadLimiter)
 app.use('/api', apiLimiter)
+app.use('/api/auth', authRoutes)
 app.use('/api', uploadRoutes)
+app.use('/api', questionnaireRoutes)
+app.use('/api', recommendationRoutes)
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })

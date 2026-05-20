@@ -79,12 +79,17 @@ export async function analyzeGardenImage(imagePath: string): Promise<GardenAnaly
   const ext = imagePath.split('.').pop()?.toLowerCase() ?? 'jpeg'
   const mimeType = mimeTypeMap[ext] ?? 'image/jpeg'
 
-  const response = await model.generateContent([
-    { inlineData: { data: base64Data, mimeType } },
-    ANALYSIS_PROMPT,
-  ])
-
-  const responseText = response.response.text().trim()
+  let responseText: string
+  try {
+    const response = await model.generateContent([
+      { inlineData: { data: base64Data, mimeType } },
+      ANALYSIS_PROMPT,
+    ])
+    responseText = response.response.text().trim()
+  } catch (err) {
+    console.error('Gemini API call failed:', err)
+    return fallbackAnalysis()
+  }
 
   // Strip markdown code fences if Gemini wraps the JSON
   const stripped = responseText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim()

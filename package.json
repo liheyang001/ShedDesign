@@ -9,11 +9,19 @@
   ],
   "scripts": {
     "install-all": "npm install",
-    "dev": "npm --workspaces run dev",
+    "dev": "concurrently \"npm run dev --workspace=frontend\" \"npm run dev --workspace=backend\"",
     "build": "npm --workspaces run build",
     "test": "npm --workspaces run test"
   },
-  "keywords": ["garden", "design", "ai", "3d"],
+  "keywords": [
+    "garden",
+    "design",
+    "ai",
+    "3d"
+  ],
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
 }

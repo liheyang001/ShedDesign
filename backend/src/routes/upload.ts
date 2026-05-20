@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import multer from 'multer'
 import { uploadImage, getImage } from '../controllers/uploadController.js'
+import { authenticate } from '../middleware/authenticate.js'
 
 const router = Router()
 
@@ -18,6 +19,7 @@ const upload = multer({
 
 router.post(
   '/upload',
+  authenticate,
   (req, res, next) => {
     upload.single('image')(req, res, (err) => {
       if (!err) return next()

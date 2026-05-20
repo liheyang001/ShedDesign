@@ -3,6 +3,7 @@
     "defaultMode": "dontAsk",
     "allow": [
       "Bash(*)",
+      "PowerShell(*)",
       "Read(*)",
       "Write(*)",
       "Edit(*)",

@@ -1,0 +1,260 @@
+.questionnaire-page {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 2rem;
+  width: 100%;
+}
+
+.questionnaire-card {
+  background: white;
+  border-radius: 12px;
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 680px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* Progress */
+.q-progress {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 2rem;
+}
+
+.q-progress-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  flex: 1;
+}
+
+.q-progress-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #eee;
+  color: #999;
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.25s, color 0.25s;
+}
+
+.q-progress-step.active .q-progress-dot {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+}
+
+.q-progress-step.done .q-progress-dot {
+  background: #667eea;
+  color: white;
+  font-size: 0.9rem;
+}
+
+.q-progress-label {
+  font-size: 0.75rem;
+  color: #999;
+  white-space: nowrap;
+}
+
+.q-progress-step.active .q-progress-label {
+  color: #667eea;
+  font-weight: 600;
+}
+
+.q-progress-line {
+  flex: 1;
+  height: 2px;
+  background: #eee;
+  margin-bottom: 1.1rem;
+  transition: background 0.25s;
+}
+
+.q-progress-line.done {
+  background: #667eea;
+}
+
+/* Step header */
+.q-step-header {
+  margin-bottom: 2rem;
+}
+
+.q-step-header h2 {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 0.3rem;
+}
+
+.q-step-header p {
+  color: #888;
+  font-size: 0.95rem;
+}
+
+/* Section */
+.q-section {
+  margin-bottom: 1.75rem;
+}
+
+.q-section-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #444;
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
+/* Choice cards grid */
+.choice-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 0.6rem;
+}
+
+.choice-grid.cols-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.choice-card-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.choice-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.9rem 0.5rem;
+  border: 2px solid #e8e8e8;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  background: #fafafa;
+  text-align: center;
+  user-select: none;
+}
+
+.choice-card:hover {
+  border-color: #b8a9f0;
+  background: #f5f3ff;
+}
+
+.choice-card.selected {
+  border-color: #667eea;
+  background: #f0eeff;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+}
+
+.choice-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.choice-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.choice-desc {
+  font-size: 0.72rem;
+  color: #888;
+  line-height: 1.3;
+}
+
+.choice-card.selected .choice-name {
+  color: #5a67d8;
+}
+
+/* Optional inputs */
+.q-input {
+  padding: 0.7rem 1rem;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.2s;
+  font-family: inherit;
+}
+
+.q-input:focus {
+  border-color: #667eea;
+}
+
+.q-textarea {
+  resize: vertical;
+  min-height: 90px;
+}
+
+.q-hint {
+  font-size: 0.8rem;
+  color: #aaa;
+  margin-top: 0.35rem;
+}
+
+/* Navigation */
+.q-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2.25rem;
+  gap: 1rem;
+}
+
+.q-btn-back {
+  padding: 0.75rem 1.5rem;
+  background: none;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: #666;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.q-btn-back:hover {
+  border-color: #999;
+  color: #333;
+}
+
+.q-btn-next,
+.q-btn-submit {
+  padding: 0.75rem 2rem;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  margin-left: auto;
+}
+
+.q-btn-next:hover,
+.q-btn-submit:hover {
+  opacity: 0.9;
+}
+
+.q-btn-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.q-error {
+  color: #e74c3c;
+  font-size: 0.9rem;
+  padding: 0.6rem 1rem;
+  background: #fdf2f2;
+  border-radius: 6px;
+  margin-top: 1rem;
+}
